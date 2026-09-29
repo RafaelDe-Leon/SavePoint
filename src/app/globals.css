@@ -1,26 +1,491 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+ * Savepoint design tokens
+ *
+ * Ported from the Savepoint Design System project (tokens/*.css).
+ *
+ * Ownership rule — every custom property is declared in exactly ONE place:
+ *   :root          → the color ramp, composite type roles, layout, motion.
+ *   @theme inline  → color aliases only (theme name differs from the raw name,
+ *                    e.g. --color-accent → var(--accent)).
+ *   @theme         → fonts, sizes, tracking, radii, shadows, easing. Tailwind
+ *                    emits these to :root itself, so plain CSS can use them.
+ *
+ * Never write `--x: var(--x)` in a @theme block: it is a self-reference, the
+ * declaration is invalid at computed-value time, and the utility disappears.
+ *
+ * The system is DARK ONLY by design — there is no light theme.
+ * ------------------------------------------------------------------------- */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- color: ink ramp -------------------------------------------------- */
+  --ink-950: #0d0e10;
+  --ink-900: #131519;
+  --ink-850: #191c21;
+  --ink-800: #20242a;
+  --ink-750: #282c33;
+  --ink-700: #30353d;
+  --ink-600: #3e444e;
+  --ink-500: #5e6571;
+  --ink-400: #8b929d;
+  --ink-300: #b3b9c2;
+  --ink-200: #d3d7dd;
+  --ink-100: #eef0f3;
+  --white: #ffffff;
+
+  /* --- color: accent + hues --------------------------------------------- */
+  --volt-300: #e4ff7a;
+  --volt-400: #d4ff3a;
+  --volt-500: #bce81e;
+  --volt-600: #93b80a;
+  --sky-400: #5aaeff;
+  --gold-400: #ffc94a;
+  --ember-400: #ff9a4a;
+  --rose-400: #ff5f6d;
+  --iris-400: #b597ff;
+  --mint-400: #4fe0b0;
+
+  /* --- color: status ----------------------------------------------------- */
+  --status-backlog: var(--ink-400);
+  --status-playing: var(--sky-400);
+  /* "Beaten" is the accent — it follows the active theme, not volt. */
+  --status-beaten: var(--accent-400);
+  --status-completed: var(--gold-400);
+  --status-onhold: var(--ember-400);
+  --status-abandoned: var(--rose-400);
+  --status-wishlist: var(--iris-400);
+
+  /* --- color: platform ---------------------------------------------------- */
+  --plat-playstation: #4c7dff;
+  --plat-xbox: #3dc25a;
+  --plat-nintendo: #ff4b4b;
+  --plat-pc: #aeb5bf;
+  --plat-mobile: #4fd6d0;
+  --plat-retro: #e8a857;
+  --plat-other: #8b929d;
+
+  /* --- color: surfaces, borders, text ------------------------------------ */
+  --bg-app: var(--ink-950);
+  --surface-1: var(--ink-900);
+  --surface-2: var(--ink-850);
+  --surface-3: var(--ink-800);
+  --surface-4: var(--ink-750);
+  --surface-5: var(--ink-700);
+
+  --border-1: #22262c;
+  --border-2: #2e333a;
+  --border-3: #3e444e;
+
+  --text-1: var(--ink-100);
+  --text-2: var(--ink-300);
+  --text-3: var(--ink-400);
+  --text-4: var(--ink-500);
+
+  /* --- accent ramp (themeable) -------------------------------------------- */
+  /* The only properties a theme overrides. AccentProvider rewrites these five
+   * on <html> at runtime; everything below is derived and needs no changes.
+   * See src/lib/accents.ts to add a color. Volt is the default. */
+  --accent-300: var(--volt-300);
+  --accent-400: var(--volt-400);
+  --accent-500: var(--volt-500);
+  --accent-600: var(--volt-600);
+  --accent-contrast: var(--ink-950);
+
+  /* --- color: semantic ---------------------------------------------------- */
+  --accent: var(--accent-400);
+  --accent-hover: var(--accent-300);
+  --accent-press: var(--accent-500);
+  --on-accent: var(--accent-contrast);
+  --accent-ring: color-mix(in oklch, var(--accent-400) 22%, transparent);
+  --accent-soft: color-mix(in oklch, var(--accent-400) 12%, transparent);
+
+  --danger: var(--rose-400);
+  --danger-soft: rgba(255, 95, 109, 0.14);
+  --danger-soft-hover: rgba(255, 95, 109, 0.22);
+  --success: var(--mint-400);
+  --warning: var(--ember-400);
+  --info: var(--sky-400);
+
+  --rating: var(--ink-100);
+  --rating-empty: var(--ink-700);
+  --overlay: rgba(6, 7, 8, 0.72);
+
+  /* --- type: composite roles (CSS `font:` shorthand) ---------------------- */
+  /* Resolve against the --font-* / --text-* families declared in @theme. */
+  --type-display: 800 var(--text-6xl) / 1 var(--font-display);
+  --type-h1: 700 var(--text-4xl) / 1.1 var(--font-display);
+  --type-h2: 700 var(--text-2xl) / 1.2 var(--font-display);
+  --type-h3: 600 var(--text-xl) / 1.3 var(--font-display);
+  --type-body: 400 var(--text-md) / 1.55 var(--font-body);
+  --type-body-lg: 400 var(--text-lg) / 1.55 var(--font-body);
+  --type-label: 500 var(--text-sm) / 1.3 var(--font-body);
+  --type-caption: 500 var(--text-xs) / 1.3 var(--font-body);
+  --type-overline: 600 11px / 1 var(--font-mono);
+  --type-stat: 600 var(--text-3xl) / 1 var(--font-display);
+  --type-mono: 500 var(--text-sm) / 1.3 var(--font-mono);
+
+  /* --- layout ------------------------------------------------------------- */
+  --control-sm: 28px;
+  --control-md: 36px;
+  --control-lg: 44px;
+  --page-max: 1240px;
+  --page-gutter: 32px;
+  --nav-height: 60px;
+  --cover-ratio: 0.75;
+
+  /* --- effects not expressible as Tailwind theme keys --------------------- */
+  --inset-hairline: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --blur-overlay: 8px;
+  --blur-nav: 14px;
+
+  /* --- motion durations (Tailwind owns the easing curves) ----------------- */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
 }
 
+/* Color utilities. `inline` so the utility emits var(--accent) rather than the
+ * resolved hex — repointing a semantic alias updates every utility at once. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Tailwind's default palette is dropped — Savepoint's ramp is the palette. */
+  --color-*: initial;
+
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: var(--white);
+
+  --color-ink-950: var(--ink-950);
+  --color-ink-900: var(--ink-900);
+  --color-ink-850: var(--ink-850);
+  --color-ink-800: var(--ink-800);
+  --color-ink-750: var(--ink-750);
+  --color-ink-700: var(--ink-700);
+  --color-ink-600: var(--ink-600);
+  --color-ink-500: var(--ink-500);
+  --color-ink-400: var(--ink-400);
+  --color-ink-300: var(--ink-300);
+  --color-ink-200: var(--ink-200);
+  --color-ink-100: var(--ink-100);
+
+  --color-volt-300: var(--volt-300);
+  --color-volt-400: var(--volt-400);
+  --color-volt-500: var(--volt-500);
+  --color-volt-600: var(--volt-600);
+  --color-sky-400: var(--sky-400);
+  --color-gold-400: var(--gold-400);
+  --color-ember-400: var(--ember-400);
+  --color-rose-400: var(--rose-400);
+  --color-iris-400: var(--iris-400);
+  --color-mint-400: var(--mint-400);
+
+  --color-status-backlog: var(--status-backlog);
+  --color-status-playing: var(--status-playing);
+  --color-status-beaten: var(--status-beaten);
+  --color-status-completed: var(--status-completed);
+  --color-status-onhold: var(--status-onhold);
+  --color-status-abandoned: var(--status-abandoned);
+  --color-status-wishlist: var(--status-wishlist);
+
+  --color-plat-playstation: var(--plat-playstation);
+  --color-plat-xbox: var(--plat-xbox);
+  --color-plat-nintendo: var(--plat-nintendo);
+  --color-plat-pc: var(--plat-pc);
+  --color-plat-mobile: var(--plat-mobile);
+  --color-plat-retro: var(--plat-retro);
+  --color-plat-other: var(--plat-other);
+
+  --color-bg-app: var(--bg-app);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-surface-5: var(--surface-5);
+
+  --color-border-1: var(--border-1);
+  --color-border-2: var(--border-2);
+  --color-border-3: var(--border-3);
+
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-text-4: var(--text-4);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-press: var(--accent-press);
+  --color-on-accent: var(--on-accent);
+  --color-accent-ring: var(--accent-ring);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-hover: var(--danger-soft-hover);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-rating: var(--rating);
+  --color-rating-empty: var(--rating-empty);
+  --color-overlay: var(--overlay);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Non-inline: Tailwind owns these names outright and emits them to :root. */
+@theme {
+  /* --- font families ------------------------------------------------------ */
+  /* The --font-*-src vars come from next/font in layout.tsx. */
+  --font-display: var(--font-bricolage-src), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-onest-src), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono-src), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* --- font sizes (Savepoint scale replaces Tailwind's rem scale) --------- */
+  --text-*: initial;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+  --text-6xl: 64px;
+
+  /* --- tracking / leading -------------------------------------------------- */
+  --tracking-*: initial;
+  --tracking-display: -0.025em;
+  --tracking-body: -0.005em;
+  --tracking-caps: 0.08em;
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-body: 1.55;
+
+  /* --- radii -------------------------------------------------------------- */
+  --radius-*: initial;
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-cover: 6px;
+  --radius-full: 999px;
+
+  /* --- shadows ------------------------------------------------------------ */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-overlay: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-2);
+  --shadow-cover: 0 10px 24px rgba(0, 0, 0, 0.45);
+
+  /* --- motion ------------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* --- sizing ------------------------------------------------------------- */
+  --spacing-control-sm: 28px;
+  --spacing-control-md: 36px;
+  --spacing-control-lg: 44px;
+  --spacing-nav: 60px;
+  --container-page: 1240px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Composite type roles. The CSS `font:` shorthand can't be a Tailwind theme
+ * key, so each role becomes its own utility.
+ * ------------------------------------------------------------------------- */
+@utility type-display {
+  font: var(--type-display);
+  letter-spacing: var(--tracking-display);
+}
+@utility type-h1 {
+  font: var(--type-h1);
+  letter-spacing: var(--tracking-display);
+}
+@utility type-h2 {
+  font: var(--type-h2);
+  letter-spacing: var(--tracking-display);
+}
+@utility type-h3 {
+  font: var(--type-h3);
+  letter-spacing: var(--tracking-display);
+}
+@utility type-body {
+  font: var(--type-body);
+  letter-spacing: var(--tracking-body);
+}
+@utility type-body-lg {
+  font: var(--type-body-lg);
+  letter-spacing: var(--tracking-body);
+}
+@utility type-label {
+  font: var(--type-label);
+  letter-spacing: var(--tracking-body);
+}
+@utility type-caption {
+  font: var(--type-caption);
+  letter-spacing: var(--tracking-body);
+}
+@utility type-overline {
+  font: var(--type-overline);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+@utility type-stat {
+  font: var(--type-stat);
+  letter-spacing: var(--tracking-display);
+}
+@utility type-mono {
+  font: var(--type-mono);
+}
+
+/* Cards use a 1px inner white hairline rather than a border. */
+@utility inset-hairline {
+  box-shadow: var(--inset-hairline);
+}
+
+/* ---------------------------------------------------------------------------
+ * Select picker
+ *
+ * A native <select> on macOS opens its menu *over* the control, positioned so
+ * the selected option lands under the cursor. That can't be moved with CSS.
+ *
+ * Chrome's customizable select (`appearance: base-select`) replaces the OS
+ * popup with a real in-page picker anchored below the control, while keeping
+ * the <select> element, its keyboard behaviour and its a11y semantics intact.
+ *
+ * Progressive enhancement: browsers without it keep the native popup, which is
+ * ugly-but-correct rather than broken.
+ * ------------------------------------------------------------------------- */
+@supports (appearance: base-select) {
+  select.sp-select,
+  select.sp-select::picker(select) {
+    appearance: base-select;
+  }
+
+  /* base-select re-renders the control as a button wrapping <selectedcontent>,
+   * which changes the box model the height/padding utilities were written for.
+   * Re-assert it so the trigger looks identical to the native rendering. */
+  select.sp-select {
+    /* Only layout here. Anything the utility classes also set — font-size,
+     * height, padding, color — must NOT be declared: `select.sp-select` is
+     * (0,1,1) and would silently outrank a (0,1,0) utility like `text-lg`. */
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    text-align: start;
+  }
+
+  select.sp-select::selectedcontent {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* The component draws its own Lucide chevron. */
+  select.sp-select::picker-icon {
+    display: none;
+  }
+
+  select.sp-select::picker(select) {
+    /* Anchored directly beneath the control, matching its width. */
+    position-area: block-end span-inline-end;
+    margin-block-start: 4px;
+    min-width: anchor-size(width);
+    max-height: 280px;
+    overflow-y: auto;
+
+    padding: 4px;
+    background: var(--surface-3);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+  }
+
+  select.sp-select option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4, 8px);
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--text-2);
+    font: var(--type-label);
+    cursor: pointer;
+  }
+
+  select.sp-select option:hover,
+  select.sp-select option:focus {
+    background: var(--surface-4);
+    color: var(--text-1);
+    outline: none;
+  }
+
+  select.sp-select option:checked {
+    color: var(--accent);
+  }
+
+  /* Selection is shown by the accent color, matching the rest of the system. */
+  select.sp-select option::checkmark {
+    display: none;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------------------------------------------------------------------------
+ * Base — ported from tokens/base.css
+ * ------------------------------------------------------------------------- */
+@layer base {
+  html {
+    /* Savepoint is dark only. This tells the browser to render native UI —
+     * <select> popups, scrollbars, date pickers, form control internals — on a
+     * dark surface. Without it Chrome paints the select popup light while the
+     * options inherit our dark palette, and the menu reads as transparent. */
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    margin: 0;
+    background: var(--bg-app);
+    color: var(--text-1);
+    font: var(--type-body);
+    letter-spacing: var(--tracking-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: var(--text-1);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--accent);
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  [tabindex]:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Toasts enter on the spring curve — one of the two places it's allowed. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes toggletip-in {
+  from {
+    opacity: 0;
+  }
 }
