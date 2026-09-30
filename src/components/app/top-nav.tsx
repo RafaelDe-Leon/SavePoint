@@ -18,7 +18,15 @@ const LINKS = [
  * The signed-in app bar. "Log a game" is the view's one volt button, so pages
  * under this nav keep their own actions secondary or ghost.
  */
-export function TopNav({ userName }: { userName: string }) {
+export function TopNav({
+  userName,
+  username,
+  avatarUrl,
+}: {
+  userName: string;
+  username: string;
+  avatarUrl?: string;
+}) {
   const pathname = usePathname();
 
   return (
@@ -61,7 +69,14 @@ export function TopNav({ userName }: { userName: string }) {
         <Button icon="plus" className="hidden md:inline-flex">
           Log a game
         </Button>
-        <Avatar name={userName} size={32} />
+        <Link
+          href={`/u/${username}`}
+          aria-label="Your profile"
+          aria-current={pathname.startsWith(`/u/${username}`) ? "page" : undefined}
+          className="focus-visible:outline-accent rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          <Avatar name={userName} src={avatarUrl} size={32} />
+        </Link>
       </div>
     </header>
   );

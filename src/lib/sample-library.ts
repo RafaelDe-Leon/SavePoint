@@ -180,6 +180,11 @@ export interface ShelfQuery {
   sort?: ShelfSort;
 }
 
+/** Your library as stored — one record per game — for "Download your data". */
+export async function getShelfEntries() {
+  return readEntries();
+}
+
 /** Every copy on your shelf — a game owned on two systems appears twice. */
 export async function getShelf() {
   return loadShelf();
@@ -267,6 +272,20 @@ export async function setShelfRating(slug: string, rating: number | undefined) {
   const e = entries.find((x) => x.slug === slug);
   if (!e) return false;
   e.rating = rating;
+  await writeEntries(entries);
+  return true;
+}
+
+/**
+ * Adds (or, with a negative delta, takes back) hours on a game in your
+ * library. Journal sessions feed the total this way. Never drops below 0.
+ */
+export async function addShelfHours(slug: string, delta: number) {
+  const entries = await readEntries();
+  const e = entries.find((x) => x.slug === slug);
+  if (!e) return false;
+  const next = Math.max(0, Math.round(((e.hours ?? 0) + delta) * 10) / 10);
+  e.hours = next || undefined;
   await writeEntries(entries);
   return true;
 }

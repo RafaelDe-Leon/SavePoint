@@ -30,6 +30,7 @@ export {
 } from "./segmented-control";
 export { Select, type SelectOption, type SelectProps } from "./select";
 export { Switch, type SwitchProps } from "./switch";
+export { Textarea, type TextareaProps } from "./textarea";
 
 // game
 export { GameCard, type GameCardProps } from "./game-card";
