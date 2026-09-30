@@ -106,7 +106,7 @@ opaque fallback behind `@supports` for browsers without `color-mix`.
 
 ### Components — `src/components/ui/`
 
-21 components, barrel-exported from `src/components/ui/index.ts`. Domain
+23 components, barrel-exported from `src/components/ui/index.ts`. Domain
 vocabulary (`GameStatus`, `STATUS_META`, `Platform`, `PLATFORM_META`) lives in
 `src/lib/game.ts` — use it rather than re-typing status strings.
 

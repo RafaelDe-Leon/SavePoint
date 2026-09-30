@@ -21,6 +21,7 @@ import {
   StatusBadge,
   Switch,
   Tabs,
+  Textarea,
   Toast,
   Toggletip,
   Tooltip,
@@ -135,7 +136,7 @@ export default function StyleguidePage() {
         <h1 className="type-h1 text-text-1">savepoint.</h1>
         <p className="text-text-3 mt-3 max-w-prose text-lg">
           Every component and variant, rendered from the same tokens the app
-          uses. 21 components across seven groups.
+          uses. 23 components across seven groups.
         </p>
       </header>
 
@@ -384,6 +385,15 @@ export default function StyleguidePage() {
               </kbd>
             }
           />
+        </div>
+      </Section>
+
+      {/* ---------------------------------------------------------------- */}
+      <Section title="Textarea" note="Input's multi-line sibling. Optional mono count against maxLength.">
+        <div className="flex max-w-md flex-col gap-3">
+          <Textarea placeholder="What worked, what didn't." />
+          <Textarea defaultValue="Every run tells you a little more." maxLength={280} count rows={3} />
+          <Textarea defaultValue="Too long" invalid rows={2} />
         </div>
       </Section>
 

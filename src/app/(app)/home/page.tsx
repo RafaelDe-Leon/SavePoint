@@ -4,11 +4,11 @@ import Link from "next/link";
 import { Greeting } from "@/components/app/greeting";
 import { GameLinkCard } from "@/components/app/game-link";
 import { PlatformTag, ProgressBar, Stat } from "@/components/ui";
+import { getProfile } from "@/lib/profile";
 import {
   getShelf,
   isBeaten,
   isOwned,
-  SAMPLE_USER,
   systemOf,
   SYSTEMS,
   uniqueGames,
@@ -68,7 +68,8 @@ function Shelf({ games }: { games: ShelfGame[] }) {
 
 export default async function HomePage() {
   // Copies drive the per-system cards; everything else counts each game once.
-  const copies = (await getShelf()).filter(isOwned);
+  const [shelf, profile] = await Promise.all([getShelf(), getProfile()]);
+  const copies = shelf.filter(isOwned);
   const owned = uniqueGames(copies);
   const beaten = owned.filter(isBeaten).length;
   const playing = owned.filter((g) => g.status === "playing");
@@ -77,7 +78,7 @@ export default async function HomePage() {
   return (
     <main className="mx-auto flex w-full max-w-page flex-col gap-12 px-4 pt-8 pb-20 sm:px-8">
       <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
-        <Greeting name={SAMPLE_USER.name} waiting={backlog.length} />
+        <Greeting name={profile.displayName} waiting={backlog.length} />
 
         <div className="bg-surface-1 inset-hairline flex flex-col gap-5 rounded-lg p-5">
           <div className="grid grid-cols-4 gap-3">

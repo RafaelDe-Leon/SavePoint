@@ -10,6 +10,8 @@ import {
 } from "@/lib/catalog/queries";
 import { PLATFORM_META } from "@/lib/game";
 import { LibraryControl } from "@/components/app/library-control";
+import { LikeButton } from "@/components/profile/like-button";
+import { getLikes } from "@/lib/profile";
 import {
   compatibleSystems,
   getShelfEntry,
@@ -32,9 +34,10 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
   const game = await getGameBySlug((await params).slug);
   if (!game) notFound();
 
-  const [entry, similar] = await Promise.all([
+  const [entry, similar, likes] = await Promise.all([
     getShelfEntry(game.id),
     getSimilarGames(game),
+    getLikes(),
   ]);
   // Your systems that can play it — plus any your copies are on, in case one
   // was logged somewhere the catalog doesn't list.
@@ -103,6 +106,13 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
                 {game.developer} · <span className="font-mono">{game.year}</span> ·{" "}
                 {game.genres.join(", ")}
               </p>
+              <div className="mt-3 -ml-3.5">
+                <LikeButton
+                  slug={game.slug}
+                  title={game.title}
+                  liked={likes.some((l) => l.slug === game.slug)}
+                />
+              </div>
             </div>
 
             <div className="flex flex-col gap-2.5">

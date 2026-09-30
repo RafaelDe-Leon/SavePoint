@@ -121,6 +121,12 @@ export async function getGamesByIds(ids: number[]) {
   return ids.map((id) => byId.get(id)).filter((g): g is CatalogGame => !!g);
 }
 
+/** Catalog records for these slugs, in the same order; unknown slugs drop out. */
+export async function getGamesBySlugs(slugs: string[]) {
+  const bySlug = new Map(CATALOG.map((g) => [g.slug, g]));
+  return slugs.map((s) => bySlug.get(s)).filter((g): g is CatalogGame => !!g);
+}
+
 /** Games sharing a genre with this one, most popular first. */
 export async function getSimilarGames(game: CatalogGame, limit = 6) {
   return CATALOG.filter(
